@@ -10,6 +10,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Kubernetes", "Kubernetes", 
 		Kubernetes\application.yaml = Kubernetes\application.yaml
 		Kubernetes\service.yaml = Kubernetes\service.yaml
 		Kubernetes\serviceaccount.yaml = Kubernetes\serviceaccount.yaml
+		Kubernetes\virtualservice.yaml = Kubernetes\virtualservice.yaml
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SolutionItems", "SolutionItems", "{BC5CBC5E-1F5E-4C45-9BE6-269A49943A59}"

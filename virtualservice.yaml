@@ -1,0 +1,17 @@
+apiVersion: gateway.solo.io/v1
+kind: VirtualService
+metadata:
+  name: keyvaultapp-virtualservice
+  namespace: gloo-system
+spec:
+  virtualHost:
+    domains:
+      - "*"
+    routes:
+      - matchers:
+          - prefix: /keyvault
+        routeAction:
+          single:
+            upstream:
+              name: keyvaultapp-service
+              namespace: keyvaultapp

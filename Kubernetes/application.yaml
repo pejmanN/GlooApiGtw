@@ -10,12 +10,12 @@ spec:
     metadata:
       labels:
         app: keyvaultapp
-        azure.workload.identity/use: "true"
+      #  azure.workload.identity/use: "true"
     spec:
-      serviceAccountName: keyvaultapp-serviceaccount
+     # serviceAccountName: keyvaultapp-serviceaccount
       containers:
         - name: keyvaultapp
-          image: ordercontainerregistry.azurecr.io/keyvaultapp:1.0.3
+          image: ordercontainerregistry.azurecr.io/gloogatewaytst:1.0.1
           ports:
             - containerPort: 5002
           env:
