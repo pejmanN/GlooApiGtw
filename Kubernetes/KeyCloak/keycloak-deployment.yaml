@@ -1,0 +1,59 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: keycloak
+  namespace: keycloak
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: keycloak
+  template:
+    metadata:
+      labels:
+        app: keycloak
+    spec:
+      securityContext:
+        runAsUser: 1000
+        fsGroup: 1000
+      containers:
+        - name: keycloak
+          image: quay.io/keycloak/keycloak:26.1.0
+          args: ["start-dev"]
+          env:
+            - name: KC_DB
+              value: dev-file
+            - name: KC_CACHE
+              value: local
+            - name: KEYCLOAK_ADMIN
+              value: admin1
+            - name: KEYCLOAK_ADMIN_PASSWORD
+              value: admin1
+            - name: KC_BOOTSTRAP_ADMIN_USERNAME
+              value: admin1
+            - name: KC_BOOTSTRAP_ADMIN_PASSWORD
+              value: admin1
+          ports:
+            - containerPort: 8080
+          volumeMounts:
+            - mountPath: /opt/keycloak/data
+              name: keycloak-storage
+              subPath: keycloak-data
+      volumes:
+        - name: keycloak-storage
+          persistentVolumeClaim:
+            claimName: keycloak-pvc
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: keycloak
+  namespace: keycloak
+spec:
+  type: LoadBalancer
+  ports:
+    - port: 80
+      targetPort: 8080
+  selector:
+    app: keycloak

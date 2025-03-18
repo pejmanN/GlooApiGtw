@@ -153,3 +153,19 @@ u can get chart template and default value for helm by:
 >helm show values gloo/gloo  >> gloogvalue.yaml
 
 
+================================================
+KEYCLOCK
+
+>kubectl apply -f .\Kubernetes\keycloak\keycloak-vol.yaml -n keycloak
+>kubectl apply -f .\Kubernetes\keycloak\keycloak-deployment.yaml -n keycloak
+
+>kubectl delete -f .\Kubernetes\keycloak\keycloak-deployment.yaml -n keycloak
+>kubectl delete -f .\Kubernetes\keycloak\keycloak-vol.yaml -n keycloak
+
+get pods:
+>kubectl get pods -n keycloak
+>kubectl get services -n keycloak
+
+its accessable from=> http://168.62.16.116/admin 
+
+

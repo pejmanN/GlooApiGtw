@@ -19,6 +19,12 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SolutionItems", "SolutionIt
 		README.md = README.md
 	EndProjectSection
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "KeyCloak", "KeyCloak", "{7E435471-1806-43AF-9596-90B79DA67464}"
+	ProjectSection(SolutionItems) = preProject
+		Kubernetes\KeyCloak\keycloak-deployment.yaml = Kubernetes\KeyCloak\keycloak-deployment.yaml
+		Kubernetes\KeyClock\keycloak-vol.yaml = Kubernetes\KeyClock\keycloak-vol.yaml
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -32,6 +38,9 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{7E435471-1806-43AF-9596-90B79DA67464} = {208C3967-78BB-4AEF-A316-668A36CA034E}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {17D6AB2E-88FA-4FF7-8E8D-5720C5AD1651}
