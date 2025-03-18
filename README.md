@@ -169,3 +169,13 @@ get pods:
 its accessable from=> http://168.62.16.116/admin 
 
 
+for getting tokrn, Configure ur postman by following:
+
+Grant type=> PKCE
+Callback URL=>https://oauth.pstmn.io/v1/callback
+Client ID=> Postman
+auth url=>http://168.62.16.116/realms/AucRealm/protocol/openid-connect/auth
+token => http://168.62.16.116/realms/AucRealm/protocol/openid-connect/token
+Scope => openid profile Auc.FullAccess
+
+

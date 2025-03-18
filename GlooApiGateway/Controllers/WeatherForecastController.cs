@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace GlooApiGateway.Controllers
@@ -19,6 +20,7 @@ namespace GlooApiGateway.Controllers
         }
 
         [HttpGet(Name = "GetWeatherForecast")]
+        [Authorize(AuthorizationPolicies.Admin)]
         public IEnumerable<WeatherForecast> Get()
         {
             return Enumerable.Range(1, 5).Select(index => new WeatherForecast
