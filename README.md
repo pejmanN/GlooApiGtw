@@ -1,12 +1,17 @@
-﻿ docker build -t gloogatewaytst .
+﻿ 
+ #### Create and tag and push image to ACR
+ docker build -t gloogatewaytst:1.0.2 .
 
  $azureContainerRegistryAddress=$(az acr show --name $azureContainerRegistryName --query "loginServer" --output tsv)
-docker tag gloogatewaytst:latest "$azureContainerRegistryAddress/gloogatewaytst:1.0.1"
+docker tag gloogatewaytst:1.0.2 "$azureContainerRegistryAddress/gloogatewaytst:1.0.2"
 
-docker push "$azureContainerRegistryAddress/gloogatewaytst:1.0.1"
+az acr login --name $azureContainerRegistryName
+
+docker push "$azureContainerRegistryAddress/gloogatewaytst:1.0.2"
 
 
-
+#### Deploying Services and Gloo ApiGateway
+```
 $namespace="keyvaultapp"
 kubectl create namespace $namespace
 
@@ -14,12 +19,120 @@ kubectl apply -f .\Kubernetes\application.yaml -n $namespace
 kubectl apply -f .\Kubernetes\service.yaml -n $namespace
 
 
+
+
+helm repo add gloo https://storage.googleapis.com/solo-public-helm
+helm repo update
+helm install gloo gloo/gloo --namespace gloo-system --create-namespace
 kubectl apply -f .\Kubernetes\virtualservice.yaml -n gloo-system
 kubectl get upstream -n gloo-system
 
+get list of helm 
+helm list --namespace gloo-system
+```
 
 
-=================================================
+### Debugging Part
+
+for debugging that ur virtual srvice is working
+
+1) Explains the configuration and status of your Gloo Virtual Service.
+> kubectl describe virtualservice keyvaultapp-virtualservice -n gloo-system
+
+
+Why Use This Command?
+It helps debug why Gloo Gateway is not routing traffic to your backend service.
+If you're getting a 503 Service Unavailable, this command can show:
+
+Route Issues (incorrect upstream name, wrong prefix match)
+Misconfigurations (missing upstream service)
+Errors in Gateway Routing
+
+
+
+2)
+>kubectl get upstream -n gloo-system
+NAME                                               AGE
+default-kubernetes-443                             93m
+gloo-system-gateway-proxy-443                      93m
+gloo-system-gateway-proxy-80                       93m
+gloo-system-gloo-443                               92m
+gloo-system-gloo-9966                              92m
+gloo-system-gloo-9976                              92m
+gloo-system-gloo-9977                              92m
+gloo-system-gloo-9979                              92m
+gloo-system-gloo-9988                              92m
+keyvaultapp-keyvaultapp-service-80                 73m
+kube-system-azure-wi-webhook-webhook-service-443   92m
+kube-system-kube-dns-53                            92m
+kube-system-metrics-server-443                     93m
+
+
+then run:
+kubectl describe upstream keyvaultapp-keyvaultapp-service-80 
+if it has =>       State:Accepted  
+it means Your upstream keyvaultapp-keyvaultapp-service-80 is now correctly discovered by Gloo and has the status "Accepted", 
+
+
+3)Verify If Gloo Gateway Can Reach Your Service:
+ >kubectl exec -it deploy/gateway-proxy -n gloo-system -- curl -v http://keyvaultapp-service.keyvaultapp.svc.cluster.local:80/WeatherForecast
+ > kubectl exec -it deploy/gateway-proxy -n gloo-system -- wget -qO- http://keyvaultapp-service.keyvaultapp.svc.cluster.local:80/WeatherForecast
+ ✅ If It Works
+If the response contains JSON data from your API, your backend service is working, and the issue is with Gloo Gateway configuration.
+
+
+================================================
+### Deployin KeyClock
+```
+$keyCloakNamespace="keycloakapp"
+kubectl create namespace $keyCloakNamespace
+kubectl apply -f .\Kubernetes\keycloak\keycloak-vol.yaml -n keycloak
+kubectl apply -f .\Kubernetes\keycloak\keycloak-deployment.yaml -n keycloak
+
+kubectl delete -f .\Kubernetes\keycloak\keycloak-deployment.yaml -n keycloak
+kubectl delete -f .\Kubernetes\keycloak\keycloak-vol.yaml -n keycloak
+```
+
+get pods:
+```
+kubectl get pods -n keycloak
+kubectl get services -n keycloak
+```
+its accessable from=> http://168.62.16.116/admin 
+
+
+for getting token, Configure ur postman by following:
+```
+Grant type=> PKCE
+Callback URL=>https://oauth.pstmn.io/v1/callback
+Client ID=> Postman
+auth url=>http://168.62.16.116/realms/AucRealm/protocol/openid-connect/auth
+token => http://168.62.16.116/realms/AucRealm/protocol/openid-connect/token
+Scope => openid profile Auc.FullAccess
+```
+
+****
+### FOOTNOTE INFO
+
+if ur VirtulService can not find ur upstream run following:
+```
+kubectl rollout restart deployment -n keyvaultapp
+
+```
+🔹 What Happens When You Run This Command?
+It does not delete the Deployment.
+All pods under the Deployment are restarted one by one (rolling restart).
+The restart is graceful (old pods are removed only after new ones are running).
+Does not change the configuration—only forces a refresh.
+
+
+CHART AND DFAULT VALUE
+u can get `chart template and default value` for helm by:
+```
+helm template gloo gloo/gloo > gloo-templates.yaml
+helm show values gloo/gloo  >> gloogvalue.yaml
+```
+
 For accesssing to api gateway using DNS name instead of IP Address
 there is 2 options:
 >1- Azure DNS Label Name Annotation, like emissary, set annotation for loadbalancer
@@ -95,87 +208,9 @@ kubectl annotate service gateway-proxy -n gloo-system \
 This command bypasses Helm entirely.
 It directly modifies the live Kubernetes object.
 Since annotations are dynamic fields, Kubernetes allows modifying them without recreating the resource.
+so the ur service is accessable by:
+http://orderapigateway.westUs.cloudapp.azure.com/keyvault/WeatherForecast
 
-=================================================
-DEBUG
-
-fro debugging that ur virtual srvice is working
-
-1) kubectl describe virtualservice keyvaultapp-virtualservice -n gloo-system
-Explains the configuration and status of your Gloo Virtual Service.
-
-Why Use This Command?
-It helps debug why Gloo Gateway is not routing traffic to your backend service.
-If you're getting a 503 Service Unavailable, this command can show:
-
-Route Issues (incorrect upstream name, wrong prefix match)
-Misconfigurations (missing upstream service)
-Errors in Gateway Routing
-
-
-
-2)kubectl get upstream -n gloo-system
-NAME                                               AGE
-default-kubernetes-443                             93m
-gloo-system-gateway-proxy-443                      93m
-gloo-system-gateway-proxy-80                       93m
-gloo-system-gloo-443                               92m
-gloo-system-gloo-9966                              92m
-gloo-system-gloo-9976                              92m
-gloo-system-gloo-9977                              92m
-gloo-system-gloo-9979                              92m
-gloo-system-gloo-9988                              92m
-keyvaultapp-keyvaultapp-service-80                 73m
-kube-system-azure-wi-webhook-webhook-service-443   92m
-kube-system-kube-dns-53                            92m
-kube-system-metrics-server-443                     93m
-
-then run:
-kubectl describe upstream keyvaultapp-keyvaultapp-service-80 
-if it has =>       State:Accepted  
-it means Your upstream keyvaultapp-keyvaultapp-service-80 is now correctly discovered by Gloo and has the status "Accepted", 
-
-
-3)Verify If Gloo Gateway Can Reach Your Service:
- >kubectl exec -it deploy/gateway-proxy -n gloo-system -- curl -v http://keyvaultapp-service.keyvaultapp.svc.cluster.local:80/WeatherForecast
- > kubectl exec -it deploy/gateway-proxy -n gloo-system -- wget -qO- http://keyvaultapp-service.keyvaultapp.svc.cluster.local:80/WeatherForecast
- ✅ If It Works
-If the response contains JSON data from your API, your backend service is working, and the issue is with Gloo Gateway configuration.
-
-
-==============================
-
-
-CHART AND DFAULT VALUE
-u can get chart template and default value for helm by:
-
->helm template gloo gloo/gloo > gloo-templates.yaml
->helm show values gloo/gloo  >> gloogvalue.yaml
-
-
-================================================
-KEYCLOCK
-
->kubectl apply -f .\Kubernetes\keycloak\keycloak-vol.yaml -n keycloak
->kubectl apply -f .\Kubernetes\keycloak\keycloak-deployment.yaml -n keycloak
-
->kubectl delete -f .\Kubernetes\keycloak\keycloak-deployment.yaml -n keycloak
->kubectl delete -f .\Kubernetes\keycloak\keycloak-vol.yaml -n keycloak
-
-get pods:
->kubectl get pods -n keycloak
->kubectl get services -n keycloak
-
-its accessable from=> http://168.62.16.116/admin 
-
-
-for getting tokrn, Configure ur postman by following:
-
-Grant type=> PKCE
-Callback URL=>https://oauth.pstmn.io/v1/callback
-Client ID=> Postman
-auth url=>http://168.62.16.116/realms/AucRealm/protocol/openid-connect/auth
-token => http://168.62.16.116/realms/AucRealm/protocol/openid-connect/token
-Scope => openid profile Auc.FullAccess
+****
 
 

@@ -48,8 +48,8 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: keycloak
-  namespace: keycloak
+  name: keycloak-service
+  #namespace: keycloak
 spec:
   type: LoadBalancer
   ports:

@@ -22,7 +22,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "KeyCloak", "KeyCloak", "{7E435471-1806-43AF-9596-90B79DA67464}"
 	ProjectSection(SolutionItems) = preProject
 		Kubernetes\KeyCloak\keycloak-deployment.yaml = Kubernetes\KeyCloak\keycloak-deployment.yaml
-		Kubernetes\KeyClock\keycloak-vol.yaml = Kubernetes\KeyClock\keycloak-vol.yaml
+		Kubernetes\KeyCloak\keycloak-vol.yaml = Kubernetes\KeyCloak\keycloak-vol.yaml
 	EndProjectSection
 EndProject
 Global
