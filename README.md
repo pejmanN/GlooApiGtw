@@ -30,8 +30,15 @@ kubectl get upstream -n gloo-system
 get list of helm 
 helm list --namespace gloo-system
 ```
-
-
+when u run following, the service that have to send requst to, is `gateway-proxy`
+```
+PS E:\TestProject\_Azure\GlooApiGateway\GlooApiGateway> kubectl get services -n $namespace
+NAME                  TYPE           CLUSTER-IP    EXTERNAL-IP      PORT(S)                                                AGE
+gateway-proxy         LoadBalancer   10.0.24.240   104.42.25.4      80:32497/TCP,443:31499/TCP                             55m
+gloo                  ClusterIP      10.0.36.93    <none>           9977/TCP,9976/TCP,9988/TCP,9966/TCP,9979/TCP,443/TCP   55m
+keyvaultapp-service   LoadBalancer   10.0.1.192    40.118.169.226   80:32162/TCP                                           60m
+```
+it means : http://104.42.25.4/keyvault/WeatherForecast/
 ### Debugging Part
 
 for debugging that ur virtual srvice is working

@@ -17,6 +17,17 @@ spec:
               namespace: keyvaultapp
         options:
           prefixRewrite: "/"
+
+      - matchers:
+          - prefix: /identitymgmt/
+        routeAction:
+          single:
+            upstream:
+              name: keycloak-upstream
+              namespace: keyvaultapp
+        options:
+          prefixRewrite: "/identitymgmt/"
+
 ---
 apiVersion: gloo.solo.io/v1
 kind: Upstream
@@ -26,5 +37,17 @@ metadata:
 spec:
   kube:
     serviceName: keyvaultapp-service
+    serviceNamespace: keyvaultapp
+    servicePort: 80
+
+---
+apiVersion: gloo.solo.io/v1
+kind: Upstream
+metadata:
+  name: keycloak-upstream
+  namespace: keyvaultapp
+spec:
+  kube:
+    serviceName: keycloak-service
     serviceNamespace: keyvaultapp
     servicePort: 80

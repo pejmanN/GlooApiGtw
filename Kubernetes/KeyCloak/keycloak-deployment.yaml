@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: keycloak
-  namespace: keycloak
+  #namespace: keycloak
 spec:
   replicas: 1
   selector:
@@ -25,14 +25,26 @@ spec:
               value: dev-file
             - name: KC_CACHE
               value: local
-            - name: KEYCLOAK_ADMIN
-              value: admin1
-            - name: KEYCLOAK_ADMIN_PASSWORD
-              value: admin1
+            - name: KC_PROXY
+              value: "edge"
             - name: KC_BOOTSTRAP_ADMIN_USERNAME
               value: admin1
             - name: KC_BOOTSTRAP_ADMIN_PASSWORD
               value: admin1
+            - name: KC_HOSTNAME
+              value: "104.42.25.4"
+            - name: KC_HOSTNAME_PATH
+              value: "/identitymgmt"
+            - name: KC_HOSTNAME_STRICT
+              value: "false"
+            - name: KC_HOSTNAME_STRICT_HTTPS
+              value: "false"
+            - name: KC_HTTP_RELATIVE_PATH
+              value: "/identitymgmt"
+            - name: KC_PROXY_HEADERS
+              value: "xforwarded"
+
+
           ports:
             - containerPort: 8080
           volumeMounts:
