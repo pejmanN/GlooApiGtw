@@ -2,7 +2,7 @@
  #### Create and tag and push image to ACR
  docker build -t gloogatewaytst:1.0.2 .
 
- $azureContainerRegistryAddress=$(az acr show --name $azureContainerRegistryName --query "loginServer" --output tsv)
+ $azureContainerRegistryAddress= $(az acr show --name $azureContainerRegistryName --query "loginServer" --output tsv)
 docker tag gloogatewaytst:1.0.2 "$azureContainerRegistryAddress/gloogatewaytst:1.0.2"
 
 az acr login --name $azureContainerRegistryName
@@ -117,6 +117,130 @@ auth url=>http://168.62.16.116/realms/AucRealm/protocol/openid-connect/auth
 token => http://168.62.16.116/realms/AucRealm/protocol/openid-connect/token
 Scope => openid profile Auc.FullAccess
 ```
+
+#### After putting KeyCloak behind the Proxy:
+http://104.42.25.4/identitymgmt/realms/master/.well-known/openid-configuration
+
+and for fulfilling to it we did:
+```
+             - name: KC_HOSTNAME
+              value: "104.42.25.4"
+            - name: KC_HOSTNAME_PATH
+              value: "/identitymgmt"
+            - name: KC_HOSTNAME_STRICT
+              value: "false"
+            - name: KC_HOSTNAME_STRICT_HTTPS
+              value: "false"
+            - name: KC_HTTP_RELATIVE_PATH
+              value: "/identitymgmt"
+            - name: KC_PROXY_HEADERS
+              value: "xforwarded"
+
+```
+the thing is, at thiss point i put following in virtualService
+```
+      - matchers:
+          - prefix: /identitymgmt/
+        routeAction:
+          single:
+            upstream:
+              name: keycloak-upstream
+              namespace: keyvaultapp
+        options:
+          prefixRewrite: "/identitymgmt/"
+```
+but im going to change `  prefixRewrite: "/identitymgmt/"` to `  prefixRewrite: "/"` for this, first we have to understand
+enviroment variable which we add on keyclock deployment file:
+🔹 KC_HOSTNAME_PATH
+
+- name: KC_HOSTNAME_PATH
+  value: "/identitymgmt"
+📌 What it does:
+
+Adds /identitymgmt as a base path for ALL Keycloak-generated URLs (e.g., login pages, admin console, authentication endpoints).
+
+Ensures internal Keycloak URLs include this path when generating redirects.
+
+📍 Example:
+🔴 Without this setting, Keycloak might generate:
+
+http://104.42.25.4/admin/ (❌ missing /identitymgmt)
+
+✅ With this setting, Keycloak generates:
+
+http://104.42.25.4/identitymgmt/admin/ (✔️ correct)
+
+
+🔹 KC_HOSTNAME_STRICT
+- name: KC_HOSTNAME_STRICT
+  value: "false"
+📌 What it does:
+
+Allows requests from any hostname, even if they don’t exactly match KC_HOSTNAME or KC_HOSTNAME_PATH.
+
+Prevents issues where Keycloak rejects requests due to mismatched URLs.
+
+📍 Example:
+🔴 If this was "true", Keycloak would reject requests if the hostname didn’t exactly match the one in its configuration.
+
+🔹 KC_HOSTNAME_STRICT_HTTPS
+
+- name: KC_HOSTNAME_STRICT_HTTPS
+  value: "false"
+📌 What it does:
+
+Allows HTTP connections, even when Keycloak expects HTTPS.
+
+Useful when running Keycloak behind a TLS-terminating proxy (like Gloo, which handles HTTPS externally).
+
+📍 Example:
+🔴 If "true", Keycloak would force all requests to use HTTPS and reject HTTP requests.
+✅ Since your proxy (Gloo) handles HTTPS, you don't need Keycloak to enforce HTTPS, so we set it to "false".
+
+🔹 KC_HTTP_RELATIVE_PATH
+
+- name: KC_HTTP_RELATIVE_PATH
+  value: "/identitymgmt"
+📌 What it does:
+
+Changes Keycloak’s internal root path to /identitymgmt.
+
+Ensures that all internal Keycloak URLs use /identitymgmt/ as the base path. so in this Senario keycloak itself
+expect `/identitymgmt` in the requested path.
+
+📍 Example:
+🔴 Without this setting, Keycloak would expect:
+
+http://104.42.25.4/admin/ (❌ no /identitymgmt)
+
+✅ With this setting, Keycloak expects:
+
+http://104.42.25.4/identitymgmt/admin/ (✔️ correct)
+
+🔹 KC_PROXY_HEADERS
+
+- name: KC_PROXY_HEADERS
+  value: "xforwarded"
+📌 What it does:
+
+Tells Keycloak to trust and use the X-Forwarded-* headers from Gloo Gateway.
+
+Ensures that redirects respect the client’s original request URL.
+
+📍 Example:
+If a client accesses:
+
+
+http://104.42.25.4/identitymgmt
+Without KC_PROXY_HEADERS=xforwarded, Keycloak sees:
+
+http://10.244.1.81:8080
+🔴 It doesn’t know it’s behind Gloo and generates the wrong redirect.
+
+✅ With KC_PROXY_HEADERS=xforwarded, Keycloak knows it’s behind Gloo and correctly generates:
+
+
+http://104.42.25.4/identitymgmt/admin
 
 ****
 ### FOOTNOTE INFO

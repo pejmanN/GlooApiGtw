@@ -31,8 +31,8 @@ spec:
               value: admin1
             - name: KC_BOOTSTRAP_ADMIN_PASSWORD
               value: admin1
-            - name: KC_HOSTNAME
-              value: "104.42.25.4"
+           # - name: KC_HOSTNAME
+           #   value: "104.42.25.4"
             - name: KC_HOSTNAME_PATH
               value: "/identitymgmt"
             - name: KC_HOSTNAME_STRICT
