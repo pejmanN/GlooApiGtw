@@ -14,7 +14,7 @@ builder.Services.AddAuthentication()
               {
                   //Its better to read the values form appsetting
                   options.Audience = "Auc-API";
-                  options.Authority = "http://168.62.16.116/realms/AucRealm";
+                  options.Authority = "http://orderapigateway.westus.cloudapp.azure.com/identitymgmt/realms/AucRealm";
                   options.MapInboundClaims = false;
 
                   //since we are running KeyClock on http 

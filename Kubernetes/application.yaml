@@ -15,7 +15,7 @@ spec:
      # serviceAccountName: keyvaultapp-serviceaccount
       containers:
         - name: keyvaultapp
-          image: ordercontainerregistry.azurecr.io/gloogatewaytst:1.0.2
+          image: ordercontainerregistry.azurecr.io/gloogatewaytst:1.0.3
           ports:
             - containerPort: 5002
           env:
