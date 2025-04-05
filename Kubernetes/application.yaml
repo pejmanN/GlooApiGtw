@@ -1,26 +1,24 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: keyvaultapp-deployment
+  name: gloogatewaytst-deployment
 spec:
   selector:
     matchLabels:
-      app: keyvaultapp
+      app: gloogatewaytst
   template:
     metadata:
       labels:
-        app: keyvaultapp
-      #  azure.workload.identity/use: "true"
+        app: gloogatewaytst
     spec:
-     # serviceAccountName: keyvaultapp-serviceaccount
       containers:
-        - name: keyvaultapp
-          image: ordercontainerregistry.azurecr.io/gloogatewaytst:1.0.3
+        - name: gloogatewaytst
+          image: ordercontainerregistry.azurecr.io/gloogatewaytst:1.0.4
           ports:
             - containerPort: 5002
           env:
-            - name: KeyVaultSetting__Url
-              value: https://myorderkeyvault.vault.azure.net/
+            - name: AuthConf__Url
+              value: http://13.64.130.251/identitymgmt/realms/AucRealm
            
           resources:
             limits:

@@ -1,20 +1,20 @@
 apiVersion: gateway.solo.io/v1
 kind: VirtualService
 metadata:
-  name: keyvaultapp-virtualservice
-  #namespace: gloo-system
+  name: gloogatewaytst-virtualservice
+  namespace: dev
 spec:
   virtualHost:
     domains:
       - "*"
     routes:
       - matchers:
-          - prefix: /keyvault/
+          - prefix: /gloogatewaytst/
         routeAction:
           single:
             upstream:
-              name: keyvaultapp-upstream
-              namespace: keyvaultapp
+              name: gloogatewaytst-upstream
+              namespace: dev
         options:
           prefixRewrite: "/"
 
@@ -24,7 +24,7 @@ spec:
           single:
             upstream:
               name: keycloak-upstream
-              namespace: keyvaultapp
+              namespace: dev
         options:
           prefixRewrite: "/identitymgmt/"
 
@@ -32,12 +32,12 @@ spec:
 apiVersion: gloo.solo.io/v1
 kind: Upstream
 metadata:
-  name: keyvaultapp-upstream
-  #namespace: gloo-system
+  name: gloogatewaytst-upstream
+  namespace: dev
 spec:
   kube:
-    serviceName: keyvaultapp-service
-    serviceNamespace: keyvaultapp
+    serviceName: gloogatewaytst-service
+    serviceNamespace: dev
     servicePort: 80
 
 ---
@@ -45,9 +45,9 @@ apiVersion: gloo.solo.io/v1
 kind: Upstream
 metadata:
   name: keycloak-upstream
-  namespace: keyvaultapp
+  namespace: dev
 spec:
   kube:
     serviceName: keycloak-service
-    serviceNamespace: keyvaultapp
+    serviceNamespace: dev
     servicePort: 80

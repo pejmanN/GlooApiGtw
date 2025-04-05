@@ -1,4 +1,4 @@
-﻿namespace GlooApiGateway
+﻿namespace GlooApiGateway.Classed
 {
     public static class AuthorizationPolicies
     {

@@ -1,4 +1,5 @@
 using GlooApiGateway;
+using GlooApiGateway.Classed;
 using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -9,12 +10,13 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+var authConf = new AuthConf();
+builder.Configuration.GetSection(nameof(AuthConf)).Bind(authConf);
 builder.Services.AddAuthentication()
               .AddJwtBearer("SSO", options =>
               {
-                  //Its better to read the values form appsetting
                   options.Audience = "Auc-API";
-                  options.Authority = "http://orderapigateway.westus.cloudapp.azure.com/identitymgmt/realms/AucRealm";
+                  options.Authority = authConf.Url;
                   options.MapInboundClaims = false;
 
                   //since we are running KeyClock on http 
