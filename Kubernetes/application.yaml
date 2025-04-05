@@ -18,8 +18,7 @@ spec:
             - containerPort: 5002
           env:
             - name: AuthConf__Url
-              value: http://13.64.130.251/identitymgmt/realms/AucRealm
-           
+              value: http://13.64.130.251/identitymgmt/realms/AucRealm      
           resources:
             limits:
               memory: "128Mi"
